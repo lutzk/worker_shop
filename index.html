@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <script
+      async="async"
+      type="application/javascript"
+      src="./index.js"
+    ></script>
+    <title>WorkerShop</title>
+    <style>
+      html {
+        height: 100%;
+      }
+      body {
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        background-color: #9a9a9a;
+      }
+      .wrap {
+        margin-left: 100px;
+        margin-right: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        height: 50%;
+      }
+      .generalStyle {
+        border: 1px solid #5c5c5c;
+        border-radius: 3px;
+        font-size: 22px;
+        padding: 15px;
+        cursor: pointer;
+        appearance: none;
+      }
+      #workBtn,
+      #resetBtn {
+      }
+      #numberInput {
+        padding-right: 0;
+      }
+      input[type="number"]::-webkit-inner-spin-button {
+        opacity: 1;
+        font-size: 20px;
+        padding: 50px;
+        padding-left: 1px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <input
+        type="button"
+        onclick="work()"
+        value="Do some heavy work"
+        id="workBtn"
+        class="generalStyle"
+      />
+      <input type="number" value="0" id="numberInput" class="generalStyle" />
+      <input
+        type="button"
+        onclick="numberInput.value = 0"
+        value="reset"
+        id="resetBtn"
+        class="generalStyle"
+      />
+    </div>
+  </body>
+</html>
