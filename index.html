@@ -6,23 +6,28 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <script
-      async="async"
-      type="application/javascript"
-      src="./index.js"
-    ></script>
+    <script type="module">
+      import { doWork as _doWork } from './index.js';
+      window.doWork = _doWork;
+    </script>
+
     <title>WorkerShop</title>
     <style>
+      h1 {
+        color: #e6e6e6;
+        text-align: center;
+      }
       html {
         height: 100%;
       }
       body {
+        margin: 0;
         font-size: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
         height: 100%;
-        background-color: #9a9a9a;
+        background-color: #505050;
       }
       .wrap {
         margin-left: 100px;
@@ -30,23 +35,25 @@
         display: flex;
         flex-direction: column;
         justify-content: space-around;
-        height: 50%;
+        height: 35%;
       }
       .generalStyle {
-        border: 1px solid #5c5c5c;
+        border: 1px solid #1f1f1f;
         border-radius: 3px;
         font-size: 22px;
         padding: 15px;
         cursor: pointer;
         appearance: none;
+        color: #e6e6e6;
+        background-color: #6f6f6f;
       }
-      #workBtn,
+      /* #workBtn,
       #resetBtn {
-      }
+      } */
       #numberInput {
         padding-right: 0;
       }
-      input[type="number"]::-webkit-inner-spin-button {
+      input[type='number']::-webkit-inner-spin-button {
         opacity: 1;
         font-size: 20px;
         padding: 50px;
@@ -56,9 +63,10 @@
   </head>
   <body>
     <div class="wrap">
+      <h1>Welcome</h1>
       <input
         type="button"
-        onclick="work()"
+        onclick="window.doWork()"
         value="Do some heavy work"
         id="workBtn"
         class="generalStyle"
