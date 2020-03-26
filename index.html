@@ -13,8 +13,11 @@
 
     <title>WorkerShop</title>
     <style>
+      :root {
+        --main-color: #e6e6e6;
+      }
       h1 {
-        color: #e6e6e6;
+        color: var(--main-color);
         text-align: center;
       }
       html {
@@ -44,12 +47,9 @@
         padding: 15px;
         cursor: pointer;
         appearance: none;
-        color: #e6e6e6;
+        color: var(--main-color);
         background-color: #6f6f6f;
       }
-      /* #workBtn,
-      #resetBtn {
-      } */
       #numberInput {
         padding-right: 0;
       }
