@@ -9,8 +9,8 @@ const sendMsgToClient = currySendMsg({ reciever: self });
 
 /**
  *
- * @param {*} data the data to work on
- * @param {*} reply the reply function replying via the provided MessagePort
+ * @param data the data to work on
+ * @param reply the reply function replying via the provided MessagePort
  */
 const doWork = (data, reply) =>
   new Promise(resolve => {
@@ -36,7 +36,7 @@ const doWork = (data, reply) =>
 
 /**
  *
- * @param {*} e MessageEvent
+ * @param e MessageEvent
  */
 const handleMsg = async e => {
   const {

@@ -2,8 +2,8 @@ import { currySendMsg, doHeavyWork, MSG_TYPES } from './sharedUtils.js';
 
 /**
  *
- * @param {*} path path to workerFile
- * @param {*} name name to assign to the worker
+ * @param path path to workerFile
+ * @param name name to assign to the worker
  */
 const initWorkerSync = (path, name) =>
   new Worker(path, { name, type: 'module' });

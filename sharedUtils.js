@@ -43,7 +43,7 @@ const currySendMsg = ({ reciever, answerHandler = null }) => msg =>
 
 /**
  *
- * @param {*} data the data to work on
+ * @param data the data to work on
  */
 const doHeavyWork = data => {
   let dataString;
