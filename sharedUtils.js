@@ -43,11 +43,16 @@ const currySendMsg = ({ reciever, answerHandler = null }) => msg =>
 
 /**
  *
- * @param json the json data
+ * @param json the json data to transform
  * @returns Uint8Array
  */
 const json2ArrayBuffer = json => new TextEncoder().encode(JSON.stringify(json));
 
+/**
+ * 
+ * @param arrayBuffer the ArrayBuffer to transform
+ * @returns json object
+ */
 const arrayBuffer2Json = arrayBuffer =>
   JSON.parse(new TextDecoder().decode(arrayBuffer));
 
