@@ -50,7 +50,7 @@ const doWork = async () => {
      * to enable awaiting it we need to replay with the MessageChanel ports postMessage function
      */
     // await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply =>
-    //   console.log('reply from pouch worker: ', reply),
+    //   console.log('reply from worker: ', reply),
     // );
     // await sendMsgToWorker({ type: MSG_TYPES.DO_HEAVY_WORK, data });
     const workedData = doHeavyWork(data);
