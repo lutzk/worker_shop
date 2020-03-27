@@ -1,5 +1,8 @@
 const sendMsg = ({ msg, reciever, answerHandler = null }) =>
   new Promise((resolve, reject) => {
+    /**
+     * extract channe creation
+     */
     const msgChannel = new MessageChannel();
     msgChannel.port1.onmessage = e => {
       if (e.data.error) {
