@@ -1,4 +1,10 @@
-import { currySendMsg, doHeavyWork, MSG_TYPES } from './sharedUtils.js';
+import {
+  doHeavyWork,
+  currySendMsg,
+  arrayBuffer2Json,
+  json2ArrayBuffer,
+  MSG_TYPES,
+} from './sharedUtils.js';
 
 /**
  *
@@ -14,8 +20,11 @@ const sendMsgToClient = currySendMsg({ reciever: self });
  */
 const doWork = (data, reply) =>
   new Promise(resolve => {
-    const workedData = doHeavyWork(data);
-    const msg = { type: MSG_TYPES.HEAVY_WORK_DONE, data: workedData };
+    const workedData = json2ArrayBuffer(doHeavyWork(data));
+    const msg = {
+      type: MSG_TYPES.HEAVY_WORK_DONE,
+      data: workedData.buffer,
+    };
 
     /**
      * 3 ways to comunicate to the main thread
@@ -23,14 +32,14 @@ const doWork = (data, reply) =>
      * `postMessage` is global in WorkerGlobalScope so we can call it directly
      */
 
-    /**
-     * here we are send a msg directly without the need to receive a msg and port
-     */
-    sendMsgToClient(msg);
+    // /**
+    //  * here we are send a msg directly without the need to receive a msg and port
+    //  */
+    // sendMsgToClient(msg);
     /**
      * here we are replying via the provided MessagePort
      */
-    reply(msg);
+    reply(msg, msg.data);
     resolve(true);
   });
 
@@ -44,7 +53,7 @@ const handleMsg = async e => {
     data: { type, data },
   } = e;
 
-  const reply = msg => replyPort.postMessage(msg);
+  const reply = (msg, data) => replyPort.postMessage(msg, [data]);
   const workerName = self.name || 'JohnnyWorkerDoe';
   const hello = `hola, ${workerName} is here to work for you, send me msg's and i'll work it out`;
 
@@ -57,7 +66,7 @@ const handleMsg = async e => {
         break;
 
       case MSG_TYPES.DO_HEAVY_WORK:
-        await doWork(data, reply);
+        await doWork(arrayBuffer2Json(data), reply);
         break;
 
       default:

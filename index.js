@@ -1,4 +1,10 @@
-import { currySendMsg, doHeavyWork, MSG_TYPES } from './sharedUtils.js';
+import {
+  doHeavyWork,
+  currySendMsg,
+  arrayBuffer2Json,
+  json2ArrayBuffer,
+  MSG_TYPES,
+} from './sharedUtils.js';
 
 /**
  *
@@ -20,9 +26,10 @@ const workerMsgHandler = e => {
         break;
 
       case MSG_TYPES.HEAVY_WORK_DONE:
-        console.log(MSG_TYPES.HEAVY_WORK_DONE, data);
-        break;
+        const resultData = arrayBuffer2Json(data);
+        console.log(MSG_TYPES.HEAVY_WORK_DONE, resultData);
 
+        break;
       case MSG_TYPES.NO_TYPE_MATCH:
         console.log(MSG_TYPES.NO_TYPE_MATCH, data);
         break;
@@ -54,10 +61,26 @@ const doWork = async () => {
    *
    * comment out here to run work in workerThread
    */
-  await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply =>
-    console.log('reply from worker: ', reply),
+  // await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply =>
+  //   console.log('reply from worker: ', reply),
+  // );
+
+  // const textEncoder = new TextEncoder();
+  // textEncoder.encode(JSON.stringify(data));
+  // const d = textEncoder.encode(JSON.stringify(data))
+  const dataForWorker = json2ArrayBuffer(data);
+  console.log(
+    'dataForWorker.byteLength before transfer',
+    dataForWorker.byteLength,
   );
-  await sendMsgToWorker({ type: MSG_TYPES.DO_HEAVY_WORK, data });
+  sendMsgToWorker({
+    type: MSG_TYPES.DO_HEAVY_WORK,
+    data: dataForWorker.buffer,
+  });
+  console.log(
+    'dataForWorker.byteLength after transfer',
+    dataForWorker.byteLength,
+  );
 
   /**
    *

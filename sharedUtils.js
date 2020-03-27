@@ -30,7 +30,7 @@ const sendMsg = ({ msg, reciever, answerHandler = null }) =>
       }
     };
 
-    reciever.postMessage(msg, [msgChannel.port2]);
+    reciever.postMessage(msg, [msgChannel.port2, msg.data]);
   }).catch(e => console.error(e));
 
 /**
@@ -40,6 +40,16 @@ const sendMsg = ({ msg, reciever, answerHandler = null }) =>
  */
 const currySendMsg = ({ reciever, answerHandler = null }) => msg =>
   sendMsg({ msg, reciever, answerHandler });
+
+/**
+ *
+ * @param json the json data
+ * @returns Uint8Array
+ */
+const json2ArrayBuffer = json => new TextEncoder().encode(JSON.stringify(json));
+
+const arrayBuffer2Json = arrayBuffer =>
+  JSON.parse(new TextDecoder().decode(arrayBuffer));
 
 /**
  *
@@ -81,4 +91,10 @@ const MSG_TYPES = {
 //   return url;
 // };
 
-export { currySendMsg, doHeavyWork, MSG_TYPES };
+export {
+  currySendMsg,
+  doHeavyWork,
+  json2ArrayBuffer,
+  arrayBuffer2Json,
+  MSG_TYPES,
+};
