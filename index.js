@@ -1,24 +1,14 @@
-/**
- * example of inline created worker
- * https://2ality.com/2017/01/messagechannel.html#inlining-web-workers
- */
-
-// const getInlineWorker = worker => {
-//   const src = `(${worker})();`;
-//   const blob = new Blob([src], { type: "application/javascript" });
-//   const url = URL.createObjectURL(blob);
-//   return url;
-// };
-
 import { currySendMsg, doHeavyWork, MSG_TYPES } from './sharedUtils.js';
 
+/**
+ *
+ * @param {*} path path to workerFile
+ * @param {*} name name to assign to the worker
+ */
 const initWorkerSync = (path, name) =>
   new Worker(path, { name, type: 'module' });
 
 const workShopWorker = initWorkerSync('/worker.js', 'workShopWorker');
-workShopWorker.onmessage = e => workerMsgHandler(e);
-
-const sendMsgToWorker = currySendMsg(workShopWorker);
 const workerMsgHandler = e => {
   const {
     data: { type, data },
@@ -42,20 +32,39 @@ const workerMsgHandler = e => {
     }
   }
 };
+const sendMsgToWorker = currySendMsg({
+  reciever: workShopWorker,
+  answerHandler: workerMsgHandler,
+});
+
+/**
+ *
+ * we can listen directly to msg the worker sends to the mainThread
+ */
+// workShopWorker.onmessage = e => workerMsgHandler(e);
 
 const doWork = async () => {
-  import('./data.js').then(async ({ data }) => {
-    /**
-     * reply can be awaited or handled via onmessage depending on how we reply
-     * to enable awaiting it we need to replay with the MessageChanel ports postMessage function
-     */
-    // await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply =>
-    //   console.log('reply from worker: ', reply),
-    // );
-    // await sendMsgToWorker({ type: MSG_TYPES.DO_HEAVY_WORK, data });
-    const workedData = doHeavyWork(data);
-    console.log(workedData);
-  });
+  const { data } = await import('./data.js');
+  /**
+   * reply can be awaitet or handled via onmessage depending on how we reply
+   * to enable awaiting it we need to replay with the MessageChanel ports postMessage function
+   */
+
+  /**
+   *
+   * comment out here to run work in workerThread
+   */
+  await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply =>
+    console.log('reply from worker: ', reply),
+  );
+  await sendMsgToWorker({ type: MSG_TYPES.DO_HEAVY_WORK, data });
+
+  /**
+   *
+   * comment out here to run work in  mainThread
+   */
+  // const workedData = doHeavyWork(data);
+  // console.log(workedData);
 };
 
 export { doWork };
