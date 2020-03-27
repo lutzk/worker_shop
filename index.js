@@ -52,6 +52,7 @@ const sendMsgToWorker = currySendMsg({
 
 const doWork = async () => {
   const { data } = await import('./data.js');
+  const dataForWorker = json2ArrayBuffer(data);
   /**
    * reply can be awaitet or handled via onmessage depending on how we reply
    * to enable awaiting it we need to replay with the MessageChanel ports postMessage function
@@ -64,11 +65,6 @@ const doWork = async () => {
   // await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply =>
   //   console.log('reply from worker: ', reply),
   // );
-
-  // const textEncoder = new TextEncoder();
-  // textEncoder.encode(JSON.stringify(data));
-  // const d = textEncoder.encode(JSON.stringify(data))
-  const dataForWorker = json2ArrayBuffer(data);
   console.log(
     'dataForWorker.byteLength before transfer',
     dataForWorker.byteLength,
