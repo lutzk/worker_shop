@@ -10,7 +10,7 @@
 //   return url;
 // };
 
-import { currySendMsg, MSG_TYPES } from './sharedUtils.js';
+import { currySendMsg, doHeavyWork, MSG_TYPES } from './sharedUtils.js';
 
 const initWorkerSync = (path, name) =>
   new Worker(path, { name, type: 'module' });
@@ -49,12 +49,12 @@ const doWork = async () => {
      * reply can be awaited or handled via onmessage depending on how we reply
      * to enable awaiting it we need to replay with the MessageChanel ports postMessage function
      */
-    await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply =>
-      console.log('reply from pouch worker: ', reply),
-    );
-    await sendMsgToWorker({ type: MSG_TYPES.DO_HEAVY_WORK, data });
-    // const workedData = doHeavyWork(data);
-    // console.log(workedData);
+    // await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply =>
+    //   console.log('reply from pouch worker: ', reply),
+    // );
+    // await sendMsgToWorker({ type: MSG_TYPES.DO_HEAVY_WORK, data });
+    const workedData = doHeavyWork(data);
+    console.log(workedData);
   });
 };
 
