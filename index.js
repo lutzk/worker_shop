@@ -33,6 +33,7 @@ const workerMsgHandler = e => {
   }
 };
 
+let isInitialized = false;
 const msgChannel = new MessageChannel();
 const sendMsgToWorker = currySendMsg({
   reciever: workShopWorker,
@@ -58,9 +59,13 @@ const doWork = async () => {
    *
    * comment out here to run work in workerThread
    */
-  await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply => {
-    console.log('__AWAITED_INIT_REPLY__', reply);
-  });
+  if (!isInitialized) {
+    await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply => {
+      console.log('__AWAITED_INIT_REPLY__', reply);
+    });
+    isInitialized = true;
+  }
+
   console.log(
     'dataForWorker.byteLength before transfer',
     dataForWorker.byteLength,
