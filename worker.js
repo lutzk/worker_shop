@@ -9,9 +9,9 @@ import {
 /**
  *
  * sends a msg to the mainThread
- * window ius called self in worker
+ * window is called `self` in worker
  */
-const sendMsgToClient = currySendMsg({ reciever: self });
+// const sendMsgToClient = currySendMsg({ reciever: self });
 
 /**
  *
@@ -27,14 +27,14 @@ const doWork = (data, reply) =>
     };
 
     /**
-     * 3 ways to comunicate to the main thread
+     *  3 ways to comunicate to the main thread
      *
-     * `postMessage` is global in WorkerGlobalScope so we can call it directly
+     *  `postMessage` is global in WorkerGlobalScope so we can call it directly
      */
 
-    // /**
-    //  * here we are send a msg directly without the need to receive a msg and port
-    //  */
+    /**
+     *   we can also send a msg directly without the need to receive a msg and port
+     */
     // sendMsgToClient(msg);
     /**
      * here we are replying via the provided MessagePort
@@ -43,41 +43,84 @@ const doWork = (data, reply) =>
     resolve(true);
   });
 
+let port;
+let reply;
+let replayWithData;
+
+const handleDefault = () =>
+  reply({
+    type: MSG_TYPES.NO_TYPE_MATCH,
+    data: 'no matching action found, no work done',
+  });
+
 /**
  *
  * @param e MessageEvent
  */
-const handleMsg = async e => {
+const handleWorkMsg = async event => {
   const {
-    ports: [replyPort],
     data: { type, data },
-  } = e;
-
-  const reply = (msg, data) => replyPort.postMessage(msg, [data]);
-  const workerName = self.name || 'JohnnyWorkerDoe';
-  const hello = `hola, ${workerName} is here to work for you, send me msg's and i'll work it out`;
+  } = event;
 
   if (type) {
-    let msg;
     switch (type) {
-      case MSG_TYPES.INIT:
-        msg = { type: MSG_TYPES.INIT_ACK, data: hello };
-        reply(msg);
-        break;
-
       case MSG_TYPES.DO_HEAVY_WORK:
-        await doWork(arrayBuffer2Json(data), reply);
+        console.log(MSG_TYPES.DO_HEAVY_WORK);
+        await doWork(arrayBuffer2Json(data), replayWithData);
         break;
 
       default:
-        msg = {
-          type: MSG_TYPES.NO_TYPE_MATCH,
-          data: 'no matching action found, no work done',
-        };
-        reply(msg);
+        handleDefault();
         break;
     }
   }
 };
 
-self.addEventListener('message', e => handleMsg(e));
+/**
+ *
+ * @param e MessageEvent
+ */
+const handleInitMsg = async event => {
+  const {
+    ports: [replyPort],
+    data: { type },
+  } = event;
+  const workerName = self.name || 'JohnnyWorkerDoe';
+  const hello = `Hola, my name is ${workerName}, i am here to work for you, send me msg's and i'll work it out`;
+
+  if (type) {
+    switch (type) {
+      case MSG_TYPES.INIT:
+        /**
+         *
+         *  get MessagePort from the sender
+         *  and set up some reply functions
+         */
+        port = replyPort;
+        const curryReply = port => msg => port.postMessage(msg);
+        const curryReplayWithData = port => (msg, data) =>
+          port.postMessage(msg, [data]);
+
+        /**
+         *
+         *  set up the MessagePort to handle incomming msg
+         */
+        reply = curryReply(port);
+
+        port.onmessage = e => handleWorkMsg(e);
+        replayWithData = curryReplayWithData(port);
+        reply({ type: MSG_TYPES.INIT_ACK, data: hello });
+        break;
+
+      default:
+        handleDefault();
+        break;
+    }
+  }
+};
+
+/**
+ *
+ * we just listen for the init msg to recieve the MessagePort
+ */
+self.addEventListener('message', event => handleInitMsg(event));

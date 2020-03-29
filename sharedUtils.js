@@ -1,45 +1,79 @@
 /**
  *
+ * @param path path to workerFile
+ * @param name name to assign to the worker
+ */
+const initWorkerSync = (path, name) =>
+  new Worker(path, { name, type: 'module' });
+
+/**
+ *
+ * @param event MessageEvent
+ * @param answerHandler a handler func to handle different kind of msg's
+ */
+const handlePortMsg = ({ event, answerHandler }) =>
+  new Promise((resolve, reject) => {
+    if (event.data.error) {
+      reject(event.data.error);
+    } else {
+      if (answerHandler) {
+        answerHandler(event);
+      }
+      resolve(event.data);
+    }
+  });
+
+/**
+ *
  * @param msg the msg to sent
  * @param reciever the target to where the msg will be sent
  * @param msgChannel a MessageChannel instance to used for communication
  * @param answerHandler a handler func to handle different kind of msg's
  */
-const sendMsg = ({ msg, reciever, answerHandler = null }) =>
-  new Promise((resolve, reject) => {
-    const msgChannel = new MessageChannel();
-    if (!msg) {
-      throw Error('no `msg` provided');
-    }
-    if (!reciever) {
-      throw Error('`sendMsg` called without reciever');
-    }
+const sendMsg = ({ msg, reciever, msgChannel, answerHandler = null }) => {
+  if (!msg) {
+    throw Error('no `msg` provided');
+  }
+  if (!reciever) {
+    throw Error('`sendMsg` called without reciever');
+  }
 
-    if (!msgChannel) {
-      throw Error('no `msgChannel` was provided');
-    }
+  if (!msgChannel) {
+    throw Error('no `port` was provided');
+  }
 
-    msgChannel.port1.onmessage = e => {
-      if (e.data.error) {
-        reject(e.data.error);
-      } else {
-        resolve(e.data);
-        if (answerHandler) {
-          answerHandler(e);
-        }
-      }
-    };
+  /**
+   * if its the init msg we sent a msg directly to the reciever
+   * via reciever.postMessage to share the MessagePort
+   *
+   * if its inialiized we communicate only via MessagePorts
+   *
+   * note how the port or the data are transfered
+   * so they are not available from the sending thread anymore or neutered
+   */
+  if (msg.type === MSG_TYPES.INIT) {
+    reciever.postMessage(msg, [msgChannel.port2]);
+  } else {
+    msgChannel.port1.postMessage(msg, [msg.data]);
+  }
 
-    reciever.postMessage(msg, [msgChannel.port2, msg.data]);
-  }).catch(e => console.error(e));
+  /**
+   * so we can await the answer
+   */
+  return new Promise(
+    resolve =>
+      (msgChannel.port1.onmessage = event =>
+        resolve(handlePortMsg({ event, answerHandler }))),
+  );
+};
 
 /**
  * @param reciever the target to where the msg will be send
  * @param msgChannel a MessageChannel instance to use for communication
  * @param answerHandler a handler func to handle different kind of msg's
  */
-const currySendMsg = ({ reciever, answerHandler = null }) => msg =>
-  sendMsg({ msg, reciever, answerHandler });
+const currySendMsg = ({ reciever, msgChannel, answerHandler = null }) => msg =>
+  sendMsg({ msg, reciever, msgChannel, answerHandler });
 
 /**
  *
@@ -49,7 +83,7 @@ const currySendMsg = ({ reciever, answerHandler = null }) => msg =>
 const json2ArrayBuffer = json => new TextEncoder().encode(JSON.stringify(json));
 
 /**
- * 
+ *
  * @param arrayBuffer the ArrayBuffer to transform
  * @returns json object
  */
@@ -101,5 +135,7 @@ export {
   doHeavyWork,
   json2ArrayBuffer,
   arrayBuffer2Json,
+  handlePortMsg,
+  initWorkerSync,
   MSG_TYPES,
 };

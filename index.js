@@ -1,18 +1,11 @@
 import {
   doHeavyWork,
   currySendMsg,
+  initWorkerSync,
   arrayBuffer2Json,
   json2ArrayBuffer,
   MSG_TYPES,
 } from './sharedUtils.js';
-
-/**
- *
- * @param path path to workerFile
- * @param name name to assign to the worker
- */
-const initWorkerSync = (path, name) =>
-  new Worker(path, { name, type: 'module' });
 
 const workShopWorker = initWorkerSync('/worker.js', 'workShopWorker');
 const workerMsgHandler = e => {
@@ -39,14 +32,17 @@ const workerMsgHandler = e => {
     }
   }
 };
+
+const msgChannel = new MessageChannel();
 const sendMsgToWorker = currySendMsg({
   reciever: workShopWorker,
+  msgChannel: msgChannel,
   answerHandler: workerMsgHandler,
 });
 
 /**
  *
- * we can listen directly to msg the worker sends to the mainThread
+ * we can also listen directly to msg the worker sends to the mainThread
  */
 // workShopWorker.onmessage = e => workerMsgHandler(e);
 
@@ -55,21 +51,21 @@ const doWork = async () => {
   const dataForWorker = json2ArrayBuffer(data);
   /**
    * reply can be awaitet or handled via onmessage depending on how we reply
-   * to enable awaiting it we need to replay with the MessageChanel ports postMessage function
+   * to enable awaiting it we need to replay with the MessageChanel port postMessage function
    */
 
   /**
    *
    * comment out here to run work in workerThread
    */
-  // await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply =>
-  //   console.log('reply from worker: ', reply),
-  // );
+  await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply => {
+    console.log('__AWAITED_INIT_REPLY__', reply);
+  });
   console.log(
     'dataForWorker.byteLength before transfer',
     dataForWorker.byteLength,
   );
-  sendMsgToWorker({
+  await sendMsgToWorker({
     type: MSG_TYPES.DO_HEAVY_WORK,
     data: dataForWorker.buffer,
   });
