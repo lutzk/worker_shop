@@ -65,7 +65,6 @@ const handleWorkMsg = async event => {
   if (type) {
     switch (type) {
       case MSG_TYPES.DO_HEAVY_WORK:
-        console.log(MSG_TYPES.DO_HEAVY_WORK);
         await doWork(arrayBuffer2Json(data), replayWithData);
         break;
 
