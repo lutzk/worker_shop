@@ -110,6 +110,13 @@ const doHeavyWork = data => {
   return parsedData;
 };
 
+const setStatusText = text => {
+  window.statusDisplay.textContent = text;
+  return new Promise(resolve => {
+    setTimeout(resolve, 1000);
+  });
+};
+
 const MSG_TYPES = {
   INIT: '@worker/INIT',
   INIT_ACK: '@main/INIT_ACK',
@@ -133,9 +140,10 @@ const MSG_TYPES = {
 export {
   currySendMsg,
   doHeavyWork,
-  json2ArrayBuffer,
-  arrayBuffer2Json,
+  setStatusText,
   handlePortMsg,
   initWorkerSync,
+  json2ArrayBuffer,
+  arrayBuffer2Json,
   MSG_TYPES,
 };

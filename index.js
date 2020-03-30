@@ -1,6 +1,7 @@
 import {
   doHeavyWork,
   currySendMsg,
+  setStatusText,
   initWorkerSync,
   arrayBuffer2Json,
   json2ArrayBuffer,
@@ -48,8 +49,11 @@ const sendMsgToWorker = currySendMsg({
 // workShopWorker.onmessage = e => workerMsgHandler(e);
 
 const doWork = async () => {
+  await setStatusText('loading data');
   const { data } = await import('./data.js');
+  await setStatusText('data loaded');
   const dataForWorker = json2ArrayBuffer(data);
+
   /**
    * reply can be awaitet or handled via onmessage depending on how we reply
    * to enable awaiting it we need to replay with the MessageChanel port postMessage function
@@ -60,20 +64,26 @@ const doWork = async () => {
    * comment out here to run work in workerThread
    */
   if (!isInitialized) {
+    await setStatusText('initializing worker');
     await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply => {
       console.log('__AWAITED_INIT_REPLY__', reply);
     });
     isInitialized = true;
+    await setStatusText('worker initialized');
   }
 
   console.log(
     'dataForWorker.byteLength before transfer',
     dataForWorker.byteLength,
   );
+
+  await setStatusText('doing working');
   await sendMsgToWorker({
     type: MSG_TYPES.DO_HEAVY_WORK,
     data: dataForWorker.buffer,
   });
+  await setStatusText('idle');
+
   console.log(
     'dataForWorker.byteLength after transfer',
     dataForWorker.byteLength,
