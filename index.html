@@ -50,6 +50,14 @@
         color: var(--main-txt-color);
         background-color: #6f6f6f;
       }
+      .btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+      .btnWrap {
+        display: flex;
+        align-content: space-between;
+      }
       #numberInput {
         padding-right: 0;
       }
@@ -74,13 +82,23 @@
     <div class="wrap">
       <h1>Welcome</h1>
       <div id="statusDisplay">idle</div>
-      <input
-        type="button"
-        onclick="window.doWork()"
-        value="Do some heavy work"
-        id="workBtn"
-        class="generalStyle"
-      />
+      <div class="btnWrap">
+        <input
+          type="button"
+          onclick="window.doWork({doWorkInMainThread: true})"
+          value="Do some heavy work in main thread"
+          id="workBtnMain"
+          class="generalStyle btn"
+        />
+        <input
+          type="button"
+          onclick="window.doWork({doWorkInMainThread: false})"
+          value="Do some heavy work in worker"
+          id="workBtnWorker"
+          class="generalStyle btn"
+        />
+      </div>
+
       <input type="number" value="0" id="numberInput" class="generalStyle" />
       <input
         type="button"

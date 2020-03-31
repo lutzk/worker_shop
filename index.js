@@ -48,7 +48,7 @@ const sendMsgToWorker = currySendMsg({
  */
 // workShopWorker.onmessage = e => workerMsgHandler(e);
 
-const doWork = async () => {
+const doWork = async ({ doWorkInMainThread = true }) => {
   await setStatusText('loading data');
   const { data } = await import('./data.js');
   await setStatusText('data loaded');
@@ -63,38 +63,42 @@ const doWork = async () => {
    *
    * comment out here to run work in workerThread
    */
-  if (!isInitialized) {
-    await setStatusText('initializing worker');
-    await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply => {
-      console.log('__AWAITED_INIT_REPLY__', reply);
+  if (doWorkInMainThread) {
+    window.workBtnMain.disabled = true;
+    await setStatusText('doing working in mainThread');
+    const workedData = doHeavyWork(data);
+    console.log(workedData);
+    await setStatusText('idle');
+    window.workBtnMain.disabled = false;
+  } else {
+    if (!isInitialized) {
+      await setStatusText('initializing worker');
+      await sendMsgToWorker({ type: MSG_TYPES.INIT }).then(reply => {
+        console.log('__AWAITED_INIT_REPLY__', reply);
+      });
+      isInitialized = true;
+      await setStatusText('worker initialized');
+    }
+
+    console.log(
+      'dataForWorker.byteLength before transfer',
+      dataForWorker.byteLength,
+    );
+
+    await setStatusText('doing working');
+    window.workBtnWorker.disabled = true;
+    await sendMsgToWorker({
+      type: MSG_TYPES.DO_HEAVY_WORK,
+      data: dataForWorker.buffer,
     });
-    isInitialized = true;
-    await setStatusText('worker initialized');
+    await setStatusText('idle');
+
+    console.log(
+      'dataForWorker.byteLength after transfer',
+      dataForWorker.byteLength,
+    );
+    window.workBtnWorker.disabled = false;
   }
-
-  console.log(
-    'dataForWorker.byteLength before transfer',
-    dataForWorker.byteLength,
-  );
-
-  await setStatusText('doing working');
-  await sendMsgToWorker({
-    type: MSG_TYPES.DO_HEAVY_WORK,
-    data: dataForWorker.buffer,
-  });
-  await setStatusText('idle');
-
-  console.log(
-    'dataForWorker.byteLength after transfer',
-    dataForWorker.byteLength,
-  );
-
-  /**
-   *
-   * comment out here to run work in  mainThread
-   */
-  // const workedData = doHeavyWork(data);
-  // console.log(workedData);
 };
 
 export { doWork };
