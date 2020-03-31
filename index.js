@@ -49,6 +49,9 @@ const sendMsgToWorker = currySendMsg({
 // workShopWorker.onmessage = e => workerMsgHandler(e);
 
 const doWork = async ({ doWorkInMainThread = true }) => {
+  window.workBtnMain.disabled = true;
+  window.workBtnWorker.disabled = true;
+
   await setStatusText('loading data');
   const { data } = await import('./data.js');
   await setStatusText('data loaded');
@@ -64,12 +67,10 @@ const doWork = async ({ doWorkInMainThread = true }) => {
    * comment out here to run work in workerThread
    */
   if (doWorkInMainThread) {
-    window.workBtnMain.disabled = true;
     await setStatusText('doing working in mainThread');
     const workedData = doHeavyWork(data);
     console.log(workedData);
     await setStatusText('idle');
-    window.workBtnMain.disabled = false;
   } else {
     if (!isInitialized) {
       await setStatusText('initializing worker');
@@ -86,7 +87,7 @@ const doWork = async ({ doWorkInMainThread = true }) => {
     );
 
     await setStatusText('doing working');
-    window.workBtnWorker.disabled = true;
+
     await sendMsgToWorker({
       type: MSG_TYPES.DO_HEAVY_WORK,
       data: dataForWorker.buffer,
@@ -97,8 +98,10 @@ const doWork = async ({ doWorkInMainThread = true }) => {
       'dataForWorker.byteLength after transfer',
       dataForWorker.byteLength,
     );
-    window.workBtnWorker.disabled = false;
   }
+  
+  window.workBtnMain.disabled = false;
+  window.workBtnWorker.disabled = false;
 };
 
 export { doWork };
