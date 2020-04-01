@@ -86,7 +86,7 @@ const doWork = async ({ doWorkInMainThread = true }) => {
       dataForWorker.byteLength,
     );
 
-    await setStatusText('doing working');
+    await setStatusText('doing work in worker'); 
 
     await sendMsgToWorker({
       type: MSG_TYPES.DO_HEAVY_WORK,

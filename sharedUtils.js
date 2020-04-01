@@ -100,9 +100,9 @@ const doHeavyWork = data => {
 
   /**
    * iterations
-   * adjust the number based on your machine cpu cores & power
+   * adjust the number based on your machine cpu & power
    */
-  const iterations = 10;
+  const iterations = 50;
   for (let index = 0; index < iterations; index++) {
     dataString = JSON.stringify(data);
     parsedData = JSON.parse(dataString);
