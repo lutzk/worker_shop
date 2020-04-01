@@ -9,10 +9,15 @@ import {
 } from './sharedUtils.js';
 
 const workShopWorker = initWorkerSync('/worker.js', 'workShopWorker');
-const workerMsgHandler = e => {
+
+/**
+ *
+ * @param event MessageEvent
+ */
+const workerMsgHandler = event => {
   const {
     data: { type, data },
-  } = e;
+  } = event;
   if (type) {
     switch (type) {
       case MSG_TYPES.INIT_ACK:
@@ -36,6 +41,13 @@ const workerMsgHandler = e => {
 
 let isInitialized = false;
 const msgChannel = new MessageChannel();
+
+/**
+ *
+ * @param reciever the target to where the msg will be sent
+ * @param msgChannel a MessageChannel instance to used for communication
+ * @param answerHandler a handler func to handle different kind of msg's
+ */
 const sendMsgToWorker = currySendMsg({
   reciever: workShopWorker,
   msgChannel: msgChannel,
@@ -44,9 +56,11 @@ const sendMsgToWorker = currySendMsg({
 
 /**
  *
- * we can also listen directly to msg the worker sends to the mainThread
+ *  we can also listen directly to msg
+ *  the worker sends to the mainThread via global postMessage
+ *
+ *  workShopWorker.onmessage = e => workerMsgHandler(e);
  */
-// workShopWorker.onmessage = e => workerMsgHandler(e);
 
 const doWork = async ({ doWorkInMainThread = true }) => {
   window.workBtnMain.disabled = true;
@@ -71,6 +85,7 @@ const doWork = async ({ doWorkInMainThread = true }) => {
     const workedData = doHeavyWork(data);
     console.log(workedData);
     await setStatusText('idle');
+
   } else {
     if (!isInitialized) {
       await setStatusText('initializing worker');
@@ -86,7 +101,7 @@ const doWork = async ({ doWorkInMainThread = true }) => {
       dataForWorker.byteLength,
     );
 
-    await setStatusText('doing work in worker'); 
+    await setStatusText('doing work in worker');
 
     await sendMsgToWorker({
       type: MSG_TYPES.DO_HEAVY_WORK,
@@ -99,7 +114,7 @@ const doWork = async ({ doWorkInMainThread = true }) => {
       dataForWorker.byteLength,
     );
   }
-  
+
   window.workBtnMain.disabled = false;
   window.workBtnWorker.disabled = false;
 };

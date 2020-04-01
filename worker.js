@@ -34,8 +34,11 @@ const doWork = (data, reply) =>
 
     /**
      *   we can also send a msg directly without the need to receive a msg and port
+     *   thas msg can be recieved via worker.onmessage in mainThread
+     *
+     *   sendMsgToClient(msg);
      */
-    // sendMsgToClient(msg);
+
     /**
      * here we are replying via the provided MessagePort
      */
@@ -43,6 +46,11 @@ const doWork = (data, reply) =>
     resolve(true);
   });
 
+
+/**
+ * 
+ * set up
+ */
 let port;
 let reply;
 let replayWithData;
@@ -55,7 +63,7 @@ const handleDefault = () =>
 
 /**
  *
- * @param e MessageEvent
+ * @param event MessageEvent
  */
 const handleWorkMsg = async event => {
   const {
@@ -77,7 +85,7 @@ const handleWorkMsg = async event => {
 
 /**
  *
- * @param e MessageEvent
+ * @param event MessageEvent
  */
 const handleInitMsg = async event => {
   const {
@@ -106,6 +114,10 @@ const handleInitMsg = async event => {
          */
         reply = curryReply(port);
 
+        /**
+         * 
+         * set up the msgHandler on the port
+        */
         port.onmessage = e => handleWorkMsg(e);
         replayWithData = curryReplayWithData(port);
         reply({ type: MSG_TYPES.INIT_ACK, data: hello });
